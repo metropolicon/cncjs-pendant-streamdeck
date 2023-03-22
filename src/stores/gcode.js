@@ -10,6 +10,7 @@ export const useGcodeStore = defineStore({
   id: 'gcode',
   state: () => ({
     name: null,
+    shortname: null,
     gcode: null,
     geometry: null,
   }),
@@ -71,6 +72,11 @@ export const useGcodeStore = defineStore({
     },
     setLoaded(filename, code) {
       this.name = filename
+      
+      const pathArray = filename.split("/")
+      const lastIndex = pathArray.length - 1
+      this.shortname =pathArray[lastIndex]
+
       if (code !== this.gcode) {
         this.geometry = null
       }

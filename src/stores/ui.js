@@ -1,4 +1,6 @@
 import { defineStore } from 'pinia'
+import { useCncStore } from '@/stores/cnc'
+import Swal from 'sweetalert2'
 
 export const useUiStore = defineStore({
   id: 'ui',
@@ -27,9 +29,15 @@ export const useUiStore = defineStore({
       type: '',
       callback: () => {},
     },
+    clickMove :{
+      value: '',
+      gcode:null,
+      callback: () => {},
+    },
     pageColor: null,
     palette: ['#000', '#fff'],
     progressColor: 4,
+    orientation: "ne",
     rows: 3,
     sceneStack: [],
     textColor: 1,
@@ -41,6 +49,7 @@ export const useUiStore = defineStore({
   }),
 
   getters: {
+    
     sceneName: (state) => {
       return state.sceneStack[state.sceneStack.length - 1]
     },
@@ -70,6 +79,7 @@ export const useUiStore = defineStore({
     },
     isWeb: () => !import.meta.env.SSR,
     displayBrightness: (state) => state.brightness,
+    machineOrientation: (state) => state.orientation,
   },
 
   actions: {
@@ -98,6 +108,52 @@ export const useUiStore = defineStore({
     completeInput() {
       this.input.callback(this.input.value)
       this.input.value = ''
+      this.goBack()
+    },
+    tellPos(event) {
+    const ui = useUiStore()
+    var rect = event.target.getBoundingClientRect();
+    if (event.originalTarget.localName.toLowerCase().includes('canvas') && event.clientX>=rect.left && event.clientX<=rect.right && event.clientY>=rect.top && event.clientY<=rect.bottom)
+    {
+      var x = event.clientX - rect.left;
+      var y = event.clientY - rect.top;      
+      const machinesize=useCncStore().getLimitsXYZ()
+      const machinesizeX=parseFloat(machinesize['x'])
+      const machinesizeY=parseFloat(machinesize['y'])
+      y=(y*(machinesizeY/rect.height)).toFixed(3)
+      x=(x*(machinesizeX/rect.width)).toFixed(3)
+      if (ui.orientation.toLowerCase().includes("e"))
+      {
+        x=-(machinesizeX-x).toFixed(3)     
+        }
+        
+      if (ui.orientation.toLowerCase().includes("s"))
+      {
+        y=(machinesizeY-y).toFixed(3)
+        }
+        else {
+          y=-y
+        }
+       
+      //MessageBox("GO TO x: " + x + " y: " + y,1500)
+      let cmdgcode="G53 X"+x+" Y"+y
+      this.clickMove.value = cmdgcode
+      // console.log(cmdgcode)      
+      Swal.fire({  title: "Move To\nX:"+x+"\nY:"+y,  icon: 'info',  timer:1500,showConfirmButton:false, showCloseButton:false,backdrop:false,background:'#777',color:'#cc0'})
+      this.clickMove.gcode(cmdgcode)
+
+      }
+    }  , 
+    startClickMove(gcode, scene = 'MoveClic', callback = (tellPos) => {}) {
+      this.clickMove.value = ''      
+      this.clickMove.gcode=gcode
+      this.clickMove.callback = callback
+      this.goToScene(scene)
+      window.addEventListener('click', this.tellPos, false);
+    },
+    completeClickMove() {
+      //this.clickMove.callback(this.clickMove.value)
+      this.clickMove.value = ''
       this.goBack()
     },
     toggleFeedrateInterval() {
@@ -158,6 +214,15 @@ export const useUiStore = defineStore({
     },
     setProgressColor(color) {
       this.progressColor = color
+    },
+    setOrientation(orientation) {
+      if (orientation !=null) {
+        orientation=orientation.toLowerCase()
+        if (orientation.includes('ne') || orientation.includes('nw') || orientation.includes('se') || orientation.includes('sw'))
+        {
+          this.orientation = orientation.toLowerCase()
+        }
+    }
     },
     setPalette(colors) {
       this.palette = colors

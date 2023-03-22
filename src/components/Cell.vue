@@ -1,6 +1,7 @@
 <script>
 import CellButton from './CellButton.vue'
 import GcodePreview from './GcodePreview.vue'
+import clickmove from './ClicMove.vue'
 import { useCncStore } from '@/stores/cnc'
 import { useUiStore } from '@/stores/ui'
 import { useGcodeStore } from '@/stores/gcode'
@@ -10,11 +11,14 @@ import { useText } from '@/lib/cell/text'
 import { useColor } from '@/lib/cell/color'
 import { useVisibility } from '@/lib/cell/visibility'
 import { useLoading } from '@/lib/cell/loading'
+
+
 </script>
 <script setup>
 const cnc = useCncStore()
 const ui = useUiStore()
 const gcode = useGcodeStore()
+
 
 const { textShadow, rows, columns } = storeToRefs(ui)
 
@@ -60,19 +64,25 @@ const gridPosition = computed(() => {
 </script>
 
 <template>
-  <div
+  <div v-if="show"
     class="cell"
     draggable="false"
     :class="{ disabled: !enabled }"
-    v-if="show"
+    
   >
+  
     <cell-button :actions="config.actions" :disabled="!enabled">
       <span class="image centered-decoration" v-if="config.icon"></span>
-
+      
       <gcode-preview
         v-if="config.type === 'gcodePreview'"
         :animated="config.animated"
       ></gcode-preview>
+      
+      <clickmove
+      v-if="config.type === 'clickmove'"
+        :animated="config.animated"
+      ></clickmove>
 
       <span
         class="text-wrapper"
@@ -122,12 +132,12 @@ const gridPosition = computed(() => {
 .cell:not(.disabled) {
   .button::before {
     content: '';
-    background: linear-gradient(to bottom, #ffffff55 30%, transparent);
+    background: linear-gradient(to bottom, #ffffff55 50%, transparent);
     position: absolute;
-    top: 3%;
-    left: 3%;
-    right: 3%;
-    height: 20%;
+    top: 0%;
+    left: 0%;
+    right: 0%;
+    height: 10%;
     max-height: 40px;
     border-radius: 5px 5px 0 0;
   }
@@ -136,7 +146,6 @@ const gridPosition = computed(() => {
   position: absolute;
   left: 5%;
   top: 5%;
-
   width: 90%;
   height: 90%;
 }
@@ -147,6 +156,7 @@ const gridPosition = computed(() => {
 .text-wrapper {
   padding: 0 5px;
   position: relative;
+  word-wrap: break-word;
   font-size: v-bind(fontSize);
   font-family: v-bind(font);
   line-height: v-bind(lineHeight);
@@ -212,13 +222,14 @@ const gridPosition = computed(() => {
 .progress-bar-meter {
   animation: progress-animation 350ms linear;
   animation-delay: 150ms;
-  fill: none;
+  fill: #7F7F7F40;
   stroke-width: 10px;
   stroke-linecap: round;
   stroke-dasharray: 360;
   stroke-dashoffset: 360;
-  transform-origin: 50% 50%;
+  transform-origin: 50% 56%;
   transform: rotate(-90deg);
+  transform: scale(0.8);
   filter: drop-shadow(0 0 10px black);
 }
 
@@ -256,7 +267,7 @@ const gridPosition = computed(() => {
   position: absolute;
   margin: 0 auto;
   left: 0;
-  top: 50%;
+  top: 40%;
   right: 0;
   height: 100%;
   width: 100%;
@@ -270,6 +281,8 @@ const gridPosition = computed(() => {
   background: v-bind('`url("icons/${props.config.icon}")`') no-repeat center
     center;
   background-size: contain;
+  height:75%;
+  width:75%;
 }
 :deep(.progress-bar-meter) {
   stroke: v-bind(cellProgressColor);

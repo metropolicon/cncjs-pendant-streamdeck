@@ -34,7 +34,15 @@ export default (socket, port, machineConfig, actionBus, ackBus) => {
   }
 
   const jog = (direction, axis) => {
-    const distance = cnc.jogDistance
+
+let distance = cnc.jogDistanceZ
+    console.log(axis)
+    if (axis.toLowerCase() === "z") {
+       distance= cnc.jogDistanceZ
+  } else 
+    {
+      distance = cnc.jogDistance
+    }
     const signedDistance = direction === '-' ? -distance : distance
 
     withRelative(() => {

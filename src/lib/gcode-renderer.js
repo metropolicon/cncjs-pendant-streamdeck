@@ -1,13 +1,17 @@
 import { preview } from '@/vendor/gcodethumbnail/gcodethumbnail'
+import { clickgrid } from '@/vendor/gcodethumbnail/clictomove'
+import { useCncStore } from '@/stores/cnc'
+import { useUiStore } from '@/stores/ui'
 
 const animatedWait = (delay) => () => {
   return new Promise((resolve) => setTimeout(resolve, delay))
 }
 const defaultColors = {
-  G0: '#3c7e30',
-  G1: '#9a96ff',
-  G2G3: '#9a96ff',
+  G0: '#ffff35',
+  G1: '#ffffff',
+  G2G3: '#ffffff',
 }
+
 export const renderToolpath = (
   canvas,
   parsedGcode,
@@ -36,6 +40,24 @@ export const renderToolpath = (
     return draw(parsedGcode.lines, drawLine, callback, halted)
   }
 }
+
+//telex
+export const renderClicmove = (
+  canvas, 
+  settings  
+) => {
+  
+  const ui = useUiStore()
+  const machinesize=useCncStore().getLimitsXYZ()
+  const getMpos=useCncStore().getMpos
+  const options = { autosize: true, ...settings }
+  console.log(machinesize)
+  clickgrid( options, canvas,machinesize,ui.orientation,getMpos)
+  
+  
+}
+
+//------------------
 
 function* chunkLines(lines, size = 1) {
   for (let i = 0, l = lines.length; i < l; i += size) {

@@ -1,7 +1,11 @@
 import { defineStore } from 'pinia'
 // TODO: Take speeds and distances from config
 const jogDistances = {
-  mm: [0.01, 0.1, 1, 10, 20, 50, 100],
+    mm: [0.01, 0.1, 1,5, 10, 20, 50, 100,200],
+  in: [0.001, 0.01, 0.1, 1, 5, 10, 20],
+}
+const jogDistancesZ = {
+  mm: [0.01, 0.1, 1,5, 10, 20, 50, 100,200],
   in: [0.001, 0.01, 0.1, 1, 5, 10, 20],
 }
 const jogSpeeds = {
@@ -87,18 +91,20 @@ export const useCncStore = defineStore({
     pauseReason: '',
     pauseMessage: '',
     errorMessage: '',
-
+    
     feedPauseReason: '',
     feedPauseMessage: '',
-
-    jogDistance: 1,
-    jogSpeed: 500,
+    jogDistance: 10,
+    jogSpeed: 2500,
+    jogDistanceZ: 10,
+    machineSize: {'x':100,'y':100},
     settings: {},
     overrides: {
       feed: 100,
       spindle: 100,
       rapid: 100,
     },
+       tooldiameter:0,
     wpos: {
       x: '0.000',
       y: '0.000',
@@ -196,6 +202,13 @@ export const useCncStore = defineStore({
     decreaseJogDistance() {
       this.jogDistance = listDecrease(this.jogDistance, this.distances, 1)
     },
+    increaseJogDistanceZ() {
+      this.jogDistanceZ = listIncrease(this.jogDistanceZ, this.distancesZ, 1)
+    },
+
+    decreaseJogDistanceZ() {
+      this.jogDistanceZ = listDecrease(this.jogDistanceZ, this.distancesZ, 1)
+    },
 
     increaseJogSpeed() {
       this.jogSpeed = listIncrease(
@@ -260,11 +273,20 @@ export const useCncStore = defineStore({
         spindle,
       }
     },
+    getLimitsXYZ() {
+      return {'x':this.axisLimits['x'],'y':this.axisLimits['y'],'z':this.axisLimits['z']}
+    },
+    getMpos()
+    {
+      return {'x':this.mpos['x'],'y':this.mpos['y']}
+    }
+    ,    
     async loadMacros() {
       if (!this.client) {
         return
       }
       const macros = await this.client.fetch('macros')
+      
       if (!macros) {
         return
       }
@@ -332,6 +354,7 @@ export const useCncStore = defineStore({
     isRelativeMove: (state) => state.modal.distance === 'G91',
     distanceUnit: (state) => (state.modal.units === 'G21' ? 'mm' : 'in'),
     distances: (state) => jogDistances[state.distanceUnit],
+    distancesZ: (state) => jogDistancesZ[state.distanceUnit],
     speeds: (state) => jogSpeeds[state.distanceUnit],
     speedFallback: (state) => (state.distanceUnit === 'mm' ? 500 : 75),
     hold: (state) => state.runState === cncStates.HOLD,
@@ -354,6 +377,8 @@ export const useCncStore = defineStore({
     },
     displayWpos: (state) => formatAxes(state.wpos, state.axes),
     displayMpos: (state) => formatAxes(state.mpos, state.axes),
+    machineSize: (state) => ('X :'+state.axisLimits['x']+"\nY :"+state.axisLimits['y']+"\nZ :"+state.axisLimits['z'])
+    ,
     remainingTimeText: (state) => {
       if (!state.remainingTime) {
         return ''

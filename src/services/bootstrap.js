@@ -67,6 +67,7 @@ export default (container) => {
     uiStore.setGcodeColors(uiConfig.gcodeColors)
     uiStore.setBgColor(uiConfig.bgColor)
     uiStore.setProgressColor(uiConfig.progressColor)
+    uiStore.setOrientation(uiConfig.orientation)
 
     // more store population
     await Promise.all([

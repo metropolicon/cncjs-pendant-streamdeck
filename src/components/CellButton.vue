@@ -14,6 +14,7 @@ import { computed, onBeforeUnmount } from 'vue'
 const cnc = useCncStore()
 const ui = useUiStore()
 
+
 const buttonActions = inject('buttonActions')
 
 const props = defineProps({

@@ -3,6 +3,8 @@ import { useUiStore } from '@/stores/ui'
 import { useCncStore } from '@/stores/cnc'
 import { useGcodeStore } from '@/stores/gcode'
 
+import Swal from 'sweetalert2'
+
 const lazyStore = () => {
   return {
     get ui() {
@@ -28,6 +30,12 @@ const machineCommands = new Set([
   'clearGcode',
   'enterPosition',
   'enterWcs',
+  'enterToolDiameter',
+  'clickMoveTo',
+  'MessageBox',
+  'ConfirmBox',
+  'enterStepXY',
+  'enterStepZ',
   'gcode',
   'goto',
   'homing',
@@ -90,6 +98,78 @@ export default (actionBus, connectionBus) => {
       gcode(`G0 ${axis}${result}`)
     })
   }
+// TELEX 
+  const MessageBox = (message,timeout=500) => {
+    
+    Swal.fire({  title: message,  icon: 'info',  timer:timeout,showConfirmButton:false, showCloseButton:false,backdrop:false,background:'#777',color:'#cc0'})
+    
+  }
+  const ConfirmBox = (message,commande) => {
+   // Swal.fire({  title: message,  icon: 'question',  showCloseButton:false,backdrop:false,background:'#777',color:'#cc0'})
+    Swal.fire({  title: 'Are you sure?',
+  text: message,
+  icon: 'warning',
+  showCancelButton: true,
+  confirmButtonColor: '#3085d6',
+  cancelButtonColor: '#d33',
+  confirmButtonText: 'Yes'
+}).then((result) => {
+  if (result.isConfirmed) {
+    Swal.fire(
+      'Deleted!',
+      'Your file has been deleted.',
+      'success'
+    )
+  }
+})
+    
+  }
+
+  const clickMoveTo = (scene = 'MoveClic')  => {
+    store.ui.startClickMove(gcode,scene, (result) => {
+      MessageBox("GOTO XY",1500)
+    }  )
+    
+  }
+  const enterToolDiameter = (VZ,VX,VY, scene = 'numpad') => {
+    console.error(`RPROBEXYZ could not be found`)
+    const label = `Enter tool diameter\n(${store.cnc.tooldiameter}mm)`
+    store.ui.startInput(store.cnc.tooldiameter, label, scene, (result) => {
+      MessageBox("Probe XYZ",1500)
+      const PX=VX-(result/2)
+      const PY=VY-(result/2)
+      store.cnc.tooldiameter=result
+      gcode(`G21\nG91\nG38.2 Z-45 F190\nG0 Z2\nG38.2 Z-25 F45\nG4 P0.1\nG10 L20 P1 Z${VZ}\nG4 P0.1\nG0 Z3\nG0 X-45\nG0 Z-10\nG38.2 X45 F190\nG0 X-2\nG38.2 X45 F45\nG4 P0.1\nG10 L20 P1 X${PX}\nG4 P0.1\nG0 X-1 Y-1 Z20\nG91\nG0 X25 Y-45\nG0 Z-20\nG38.2 Y45 F190\nG0 Y-2\nG38.2 Y45 F45\nG4 P0.1\nG10 L20 P1 Y${PY}\nG4 P0.1\nG0 Y-10\nG0 Z10\nG90\nG0 X0Y0`)
+    })
+  }
+  
+  const enterStepXY = (scene = 'numpad') => {
+    const label = `Enter XY step\n(${store.cnc.jogDistance}mm)`
+    store.ui.startInput(store.cnc.jodDistance, label, scene, (result) => {
+      store.cnc.jogDistance=result
+    })
+  }
+  
+  const enterStepZ = ( scene = 'numpad') => {
+    const label = `Enter Z step\n(${store.cnc.jogDistanceZ}mm)`
+    store.ui.startInput(store.cnc.jodDistanceZ, label, scene, (result) => {
+      store.cnc.jogDistanceZ=result
+    })
+  }
+  
+  
+  const jogDistanceZ = (sign) => {
+    if (sign === '-') {
+      store.cnc.decreaseJogDistanceZ()
+    } else {
+      store.cnc.increaseJogDistanceZ()
+    }
+  }
+  const completeClickMove = () => {
+    store.ui.completeClickMove()
+  }
+// FIN TELEX
+  
   const completeInput = () => {
     store.ui.completeInput()
   }
@@ -110,6 +190,7 @@ export default (actionBus, connectionBus) => {
   }
 
   const jog = (direction, axis) => {
+    MessageBox("Jog "+axis)
     actionBus.emit('jog', { direction, axis })
   }
 
@@ -120,6 +201,7 @@ export default (actionBus, connectionBus) => {
       store.cnc.increaseJogDistance()
     }
   }
+  
 
   const jogSpeed = (sign) => {
     if (sign === '-') {
@@ -166,13 +248,23 @@ export default (actionBus, connectionBus) => {
   }
 
   const gcode = (code) => {
+    if (code.startsWith('G0')) {
+      const message = code.split('G0 ')[1]
+      MessageBox("Go to "+message,1000)
+    }
+    if (code.startsWith('G10')) {
+      const message = code.split(' ')
+      MessageBox("set Zero "+message[3],1000)
+    }
     actionBus.emit('gcode', code)
   }
   const command = (cmd, ...args) => {
+    //Swal.fire({  title: cmd,  icon: 'info',  timer:1000,showConfirmButton:false, showCloseButton:false})
     actionBus.emit('command', { command: cmd, args: args })
   }
   const reset = () => {
     command('reset')
+    command('unlock')
   }
   const connect = () => {
     if (!store.cnc.connected) {
@@ -200,10 +292,11 @@ export default (actionBus, connectionBus) => {
         return
       }
     }
-
+    MessageBox("Execute macro [<span style='color:white'>"+macroName+'</span>]',1500) 
     command('macro:run', macroId)
   }
   const homing = () => {
+    MessageBox("Homing....",1500)
     command('homing')
   }
   const unlock = () => {
@@ -347,11 +440,18 @@ export default (actionBus, connectionBus) => {
     clearUserFlag,
     command: userCommand,
     completeInput,
+    completeClickMove,
     connect,
     decreaseFeedrate,
     decreaseSpindle,
     enterPosition,
     enterWcs,
+    enterToolDiameter,
+    clickMoveTo,
+    MessageBox,
+    ConfirmBox,
+    enterStepXY,
+    enterStepZ,
     fileDetails,
     loadDetailFile,
     fileListScrollDown,
@@ -367,6 +467,7 @@ export default (actionBus, connectionBus) => {
     inputCommand,
     jog,
     jogDistance,
+    jogDistanceZ,
     jogSpeed,
     loadFile,
     loadFolder,
@@ -447,4 +548,10 @@ export default (actionBus, connectionBus) => {
     ensureHandler,
     enabled,
   }
+}
+
+export const gogcode = (gcode) =>
+{
+  
+ this.gcode(gcode) 
 }

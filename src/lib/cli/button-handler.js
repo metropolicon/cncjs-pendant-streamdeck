@@ -32,6 +32,7 @@ export default class ButtonHandler {
     if (!this.hasButton.value) {
       return
     }
+    
     if (!this.active.value || !this.buttons.has(index)) {
       return
     }

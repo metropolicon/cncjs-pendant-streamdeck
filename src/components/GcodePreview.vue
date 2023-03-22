@@ -1,5 +1,6 @@
 <script>
 import { renderToolpath } from '@/lib/gcode-renderer'
+
 import { useGcodeStore } from '@/stores/gcode'
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
@@ -53,6 +54,7 @@ const renderGcode = (animate) => {
   canvasEl.getContext('2d').clearRect(0, 0, canvasEl.width, canvasEl.height)
   const toAnimate = animate ?? false
   renderToolpath(canvasEl, geometry.value, { animate: toAnimate })
+  
 }
 
 const debouncedUpdate = debounce(() => {

@@ -31,12 +31,14 @@ export default class CliButton {
 
   down() {
     if (this.enabled.value) {
+      console.log("Button down")
       this.buttonHandler.down()
     }
   }
 
   up() {
     if (this.enabled.value) {
+      console.log("Button up")
       this.buttonHandler.up()
     }
   }
@@ -176,6 +178,9 @@ export default class CliButton {
         )
       })
     }
+    
+    
+    
 
     this.show = show
 

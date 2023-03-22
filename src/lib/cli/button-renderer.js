@@ -74,6 +74,16 @@ const getRender = async (config, canvas, directory) => {
       left: Math.floor((outputWidth - width) / 2),
     })
   }
+  
+  if (config.type === 'clickmove') {
+    const { width, height } = canvas.dimensions()
+    finalComposite.push({
+      input: await canvas.buffer(),
+      top: Math.floor((outputHeight - height) / 2),
+      left: Math.floor((outputWidth - width) / 2),
+    })
+  }
+  
 
   if (config.text) {
     const fontSize = config.fontSize
