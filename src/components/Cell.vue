@@ -144,10 +144,10 @@ const gridPosition = computed(() => {
 }
 .gcode-preview {
   position: absolute;
-  left: 5%;
-  top: 5%;
-  width: 90%;
-  height: 90%;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
 }
 .icon {
   filter: drop-shadow(2px 3px 0 #00000022);

@@ -29,11 +29,11 @@
   ctx.closePath()
  }
  
-function drawMpos(context,x=0,y=0) 
+export function drawMpos(context,x=0,y=0) 
 {
     context.fillStyle = "#FFFF00";
     context.beginPath();
-    context.arc(15,15, 10, 0, 2 * Math.PI);
+    context.arc(x, y, 5, 0, 2 * Math.PI);
     context.fill();
     context.closePath()
   
@@ -107,18 +107,40 @@ function drawgrid(canvas,ctx,orientation,MposX=0,MposY=0,machinesize)
   var MyPos=MachinetoGrid(machinesize,CanvasRect,0,0,orientation)  
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   
+  /*
+  for (let pas = 0; pas <= maxHeight; pas=pas+space) { // horizontal lines
+   drawLine(ctx,0,pas,maxWidth,pas,gridcolor,1)      
+  } 
+  */
   for (let pas = 0; pas <= maxHeight; pas=pas+space) { // horizontal lines 
     MyPos=MachinetoGrid(machinesize,CanvasRect,0,pas,orientation)
     if (pas % 100 !==0 ) drawLine(ctx,0,MyPos.y,canvas.width,MyPos.y,gridcolor,1)          
   } 
-  
+  /*
+  for (let pas = 0; pas <= maxHeight; pas=pas+100) { // horizontal lines 100
+    MyPos=MachinetoGrid(machinesize,CanvasRect,0,pas,orientation)
+    drawLine(ctx,0,MyPos.y,canvas.width,MyPos.y,gridCent,1)  
+    ctx.font = "16px serif" 
+    ctx.fillStyle = "#ffffff"   
+    ctx.fillText(pas, 0 , MyPos.y)
+            
+  } 
+  */
   
   for (let pas = 0; pas <= maxWidth; pas=pas+space) { //vertical lines
     // drawLine(ctx,pas,0,pas,maxHeight,gridcolor,1)    
     MyPos=MachinetoGrid(machinesize,CanvasRect,pas,0,orientation)
     if (pas % 100 !==0 ) drawLine(ctx,MyPos.x,0,MyPos.x,canvas.height,gridcolor,1) 
   } 
-  
+  /*
+  for (let pas = 0; pas <= maxWidth; pas=pas+100) { // horizontal lines 100
+    MyPos=MachinetoGrid(machinesize,CanvasRect,pas,0,orientation)
+    drawLine(ctx,MyPos.x,0,MyPos.x,canvas.height,gridCent,1)
+    ctx.font = "16px serif" 
+    ctx.fillStyle = "#ffffff"   
+    ctx.fillText(pas, MyPos.x , canvas.height)          
+  } 
+  */
   
   ctx.beginPath()
   
@@ -151,37 +173,12 @@ function drawgrid(canvas,ctx,orientation,MposX=0,MposY=0,machinesize)
   ctx.font = "24px serif"    
   if (orientation.includes('s')) ctx.fillText("Y", texteXY.x-9 , texteXY.y-30)
   else ctx.fillText("Y", texteXY.x-9, texteXY.y+30)
-   
+
+  
+    
   ctx.closePath()  
   
-  
-  for (let pas = 0; pas <= Math.round(machinesize['y']); pas=pas+100) { // horizontal lines 100
-    MyPos=MachinetoGrid(machinesize,CanvasRect,0,pas,orientation)
-    var posy=parseInt(MyPos.y) 
-    ctx.setLineDash([5,5])
-    drawLine(ctx,0,posy,canvas.width,posy,"#ffffff",1)
-    if (pas>0) {  
-    ctx.font = "16px serif" 
-    ctx.fillStyle = "#ffffff"   
-    ctx.fillText(pas, 0 , posy)
-    ctx.fillText(pas, canvas.width-30 , posy)
-  }
-            
-  } 
-  for (let pas = 0; pas <= Math.round(machinesize['x']); pas=pas+100) { // horizontal lines 100
-    MyPos=MachinetoGrid(machinesize,CanvasRect,pas,0,orientation)
-    var posx=parseInt(MyPos.x)
-    ctx.setLineDash([5,5])
-    drawLine(ctx,posx,0,posx,canvas.height,"#ffffff",1)
-     if (pas>0)  {  
-    ctx.font = "16px serif" 
-    ctx.fillStyle = "#ffffff"  
-   
-    ctx.fillText(pas, posx-15,15 )
-    ctx.fillText(pas, posx-15,canvas.height)
-  }
-            
-  } 
+  drawMpos(ctx,MposX,MposY)  
   
 }
 
@@ -195,20 +192,19 @@ export function clickgrid(settings, canvas, machinesize,orientation,getMpos) {
   const machinesizeX=parseFloat(machinesize['x'])
   const machinesizeY=parseFloat(machinesize['y'])
   let canvasratioX=machinesizeX/machinesizeY
-  let machinevertical=false  
-  const originalWidth  = canvas.width;
-  const originalHeight = canvas.height;  
+  let machinevertical=false
+  var canvas100eme=document.getElementsByClassName('canvasxyz')[0]
+  const axeXcolor="#eeeeee"
+  const axeYcolor="#11FF11"
+  canvas100eme.id     = "CursorLayer";
+  canvas100eme.width  = canvas.width;
+  canvas100eme.height = canvas.height;  
+  canvas100eme.style.zIndex   = -1;
+  canvas100eme.style.position = "absolute";
+  canvas100eme.style.top= "0px";
+  canvas100eme.style.left= "0px";
+  const ctx100eme = canvas100eme.getContext('2d')
   
-  var canvasPosition=document.getElementsByClassName('canvasposition')[0]  
-  canvasPosition.id     = "CursorPosition";
-  canvasPosition.width  = 30;
-  canvasPosition.height = 30;  
-  canvasPosition.style.zIndex   = 999;
-  canvasPosition.style.position = "absolute";
-  canvasPosition.style.top= "0px";
-  canvasPosition.style.left= "0px";
-  
-  const ctxPosition = canvasPosition.getContext('2d')
   
   if (canvasratioX<1) { machinevertical=true  }
   
@@ -239,33 +235,54 @@ export function clickgrid(settings, canvas, machinesize,orientation,getMpos) {
   let MposX = lastvalue['x']
   let MposY = lastvalue['y']
   var MyPos=MachinetoGrid(machinesize,CanvasRect,MposX,MposY,orientation)
-  drawgrid(canvas,ctx,orientation,MyPos['x'],MyPos['y'],machinesize)
-     
+  drawgrid(canvas,ctx,orientation,MyPos['x'],MyPos['y'
+],machinesize)
+  for (let pas = 0; pas <= Math.round(machinesize['y']); pas=pas+100) { // horizontal lines 100
+    MyPos=MachinetoGrid(machinesize,CanvasRect,0,pas,orientation)
+    var posy=parseInt(MyPos.y)+((canvas100eme.height-canvas.height)/2)
+    var diff=((canvas100eme.width-canvas.width)/2)
+    ctx100eme.setLineDash([5,5])
+    drawLine(ctx100eme,diff,posy,diff+canvas.width,posy,"#ffffff",1)
+    if (pas>0) {  
+    ctx100eme.font = "16px serif" 
+    ctx100eme.fillStyle = "#ffffff"   
+    ctx100eme.fillText(pas, diff , posy)
+    ctx100eme.fillText(pas, diff+canvas.width-30 , posy)
+  }
+            
+  } 
+  for (let pas = 0; pas <= Math.round(machinesize['x']); pas=pas+100) { // horizontal lines 100
+    MyPos=MachinetoGrid(machinesize,CanvasRect,pas,0,orientation)
+    var posx=parseInt(MyPos.x)+((canvas100eme.width-canvas.width)/2)
+    var diff=((canvas100eme.height-canvas.height)/2)
+    ctx100eme.setLineDash([5,5])
+    drawLine(ctx100eme,posx,diff,posx,diff+canvas.height,"#ffffff",1)
+     if (pas>0)  {  
+    ctx100eme.font = "16px serif" 
+    ctx100eme.fillStyle = "#ffffff"  
+   
+    ctx100eme.fillText(pas, posx-15,diff )
+    ctx100eme.fillText(pas, posx-15,diff+canvas.height)
+  }
+            
+  } 
+   
   
-  MposX=65535;
-  MposY=65535;
-  const diffY=((originalHeight-canvas.height)/2)-15
-  const diffX=((originalWidth-canvas.width)/2)-15
-  drawMpos(ctxPosition,MposX,MposY)
   setInterval(function() {
     var newValue = getMpos();
     if (MposX!=newValue['x'] || MposY!=newValue['y'])
-    
     {
     //if (lastvalue != newValue) {
-       
         MposX=newValue['x']
         MposY=newValue['y']
         MyPos=MachinetoGrid(machinesize,CanvasRect,MposX,MposY,orientation)
-        var MposNX=parseInt(MyPos['x'])+parseInt(diffX)
-        var MposNY=parseInt(MyPos['y'])+parseInt(diffY)
-        canvasPosition.style.top= ""+MposNY+"px";
-        canvasPosition.style.left= ""+MposNX+"px";
-        
+        drawgrid(canvas,ctx,orientation,MyPos['x'],MyPos['y'],machinesize)
 
         
     }
   }, 5); //
+  
+  //---------------
   
   
 }

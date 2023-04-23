@@ -13,6 +13,7 @@ export const useGcodeStore = defineStore({
     shortname: null,
     gcode: null,
     geometry: null,
+    startxy: {},
   }),
   getters: {
     dimensions() {
@@ -65,6 +66,7 @@ export const useGcodeStore = defineStore({
       }
       return Object.freeze(dimensions)
     },
+    
   },
   actions: {
     unload() {
@@ -85,5 +87,11 @@ export const useGcodeStore = defineStore({
     setGeometry(geometry) {
       this.geometry = Object.freeze(geometry)
     },
+    getStartXY(startxy) {
+      return this.startxy
+    },
+    setStartXY(startxy) {
+      this.startxy=startxy
+    }
   },
 })

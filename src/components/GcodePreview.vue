@@ -82,10 +82,23 @@ onUnmounted(() => {
     :width="dimensions.width"
     :height="dimensions.height"
   ></canvas>
+  <canvas
+    class="canvasposition"
+    ref="canvasposition"
+    :key="instance"
+    :width="dimensions.width"
+    :height="dimensions.height"
+  ></canvas>
 </template>
 
 <style>
 .gcode-preview {
   object-fit: contain;
+}
+.canvasposition {
+  object-fit: contain;
+  z-index:3;
+  pointer-events:none;
+ 
 }
 </style>

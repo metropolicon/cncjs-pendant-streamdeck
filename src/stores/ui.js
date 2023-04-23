@@ -113,7 +113,7 @@ export const useUiStore = defineStore({
     tellPos(event) {
     const ui = useUiStore()
     var rect = event.target.getBoundingClientRect();
-    if (event.originalTarget.localName.toLowerCase().includes('canvas') && event.clientX>=rect.left && event.clientX<=rect.right && event.clientY>=rect.top && event.clientY<=rect.bottom)
+    if (this.sceneName=='MoveClic' && event.originalTarget.localName.toLowerCase().includes('canvas') && event.clientX>=rect.left && event.clientX<=rect.right && event.clientY>=rect.top && event.clientY<=rect.bottom)
     {
       var x = event.clientX - rect.left;
       var y = event.clientY - rect.top;      

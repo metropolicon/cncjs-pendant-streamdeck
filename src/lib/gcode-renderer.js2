@@ -9,7 +9,6 @@ import { useGcodeStore } from '@/stores/gcode'
 
 
 
-
 const animatedWait = (delay) => () => {
   return new Promise((resolve) => setTimeout(resolve, delay))
 }
@@ -26,29 +25,22 @@ export const renderToolpath = (
   callback = () => {},
   halted = () => false
 ) => {
-  const ui = useUiStore()
   const gcode = useGcodeStore()
   const machinesize=useCncStore().getLimitsXYZ()
   const colors = { ...defaultColors, ...(settings.colors || {}) }
   const options = { autosize: true, ...settings }
   const size=parsedGcode.size
-  try {
-  if (myInterval) {
-    clearInterval(myInterval);
-    myInterval=null
-  }
-}
-catch (error) {
-  var myInterval=null
-}
  
   // -------------------------------------
+//  console.log("*********************************")
      
   const machinesizeX=parseFloat(machinesize['x'])
   const machinesizeY=parseFloat(machinesize['y'])
   const canvasWidth=canvas.width
-  const canvasHeight=canvas.height   
-  const rayon=parseInt((15*canvas.height)/1080)  
+  const canvasHeight=canvas.height 
+  
+  const rayon=parseInt((15*canvas.height)/1080)
+  
   var canvasPosition=document.getElementsByClassName('canvasposition')[0]  
   canvasPosition.id     = "CursorPosition";
   canvasPosition.width  = rayon*2;
@@ -67,6 +59,7 @@ catch (error) {
   }
   first=false
   var startXY=gcode.getStartXY()
+  // console.log("STARTXY:",startXY)
   if (options.animate) {
     animatedDraw({
       lines: parsedGcode.lines,
@@ -76,9 +69,8 @@ catch (error) {
       callback,
       halted,
     })
-  } 
-  else 
-  {
+  } else 
+    {
     draw(parsedGcode.lines, drawLine, callback, halted)
   }
   var MposX=65535;
@@ -86,49 +78,37 @@ catch (error) {
   let targetDimensions = {}   
   const imageWidth = Math.abs(size.max.x - size.min.x)
   const imageHeight = Math.abs(size.max.y - size.min.y)
-  const centreX=gcode.displayRange.min.x<0 ? Math.abs(gcode.displayRange.min.x) : 0;
-  const centreY=gcode.displayRange.min.y<0 ? Math.abs(gcode.displayRange.min.y) : 0;
   const RatioX=(canvas.width/parseFloat(gcode.displayDimensions.width)) //imageWidth
   const RatioY=(canvas.height/parseFloat(gcode.displayDimensions.depth)) //imageHeight 
-  const DiffX=Math.round((canvasWidth-canvas.width)/2)-rayon
-  const DiffY=parseInt(canvas.height)+Math.round((canvasHeight-canvas.height)/2)-rayon
-    
-  console.log("Scene : ",ui.sceneName,",",gcode.getStartXY())
-  //if (ui.sceneName=="currentGcode") 
-  if (MposX>0)
-  {
+  const DiffX=parseInt((canvasWidth-canvas.width)/2)-rayon
+  const DiffY=parseInt(canvas.height)+parseInt((canvasHeight-canvas.height)/2)-rayon
+  
+  
+  
+  if (canvas.height>0) {
     drawMpos(ctxPosition,rayon)
     startXY=gcode.getStartXY()
-    myInterval=setInterval(function() {
+  setInterval(function() {
     var newValue = useCncStore().getWpos();
-    if (MposX!=parseFloat(newValue['x']).toFixed(3) || MposY!=parseFloat(newValue['y']).toFixed(3))   
-    {      
-        MposX=parseFloat(newValue['x']).toFixed(3)
-        MposY=parseFloat(newValue['y']).toFixed(3)
-        
-        // console.log("MPOS x/y:",MposX,',',MposY)
-        var MposNX=Math.round((parseFloat(MposX)+parseFloat(centreX))*RatioX)+DiffX
-        var MposNY=Math.round(DiffY-((parseFloat(MposY)+parseFloat(centreY))*RatioY))
-        // console.log("MPOS after x/y:",MposNX,',',MposNY,"(",MposX,",",Total,",",DiffX,")")
+    if (MposX!=newValue['x'] || MposY!=newValue['y'])
+    
+    {
+    
+       
+        MposX=newValue['x']
+        MposY=newValue['y']
+        //console.log("MPOS x/y:",MposX,',',MposY)
+        var MposNX=parseInt(MposX*RatioX)+DiffX+parseInt(startXY["x"])
+        var MposNY=DiffY-parseInt(MposY*RatioY)
+        //console.log("MPOS after x/y:",MposNX,',',MposNY,"(",startXY["x"],")")
         canvasPosition.style.top= ""+MposNY+"px";
-        canvasPosition.style.left= ""+MposNX+"px";  
+        canvasPosition.style.left= ""+MposNX+"px";
+        
        
         
     }
-    if (ui.sceneName!="currentGcode" && ui.sceneName!="status") {
-      clearInterval(myInterval);
-      myInterval=null
-      console.log("CLEARINTERVAL)")
-    }
   }, 5); //
 }
-else {
-  if (myInterval) {
-    clearInterval(myInterval);
-    myInterval=null
-  }
-}
-
 }
 
 // *************************telex***************

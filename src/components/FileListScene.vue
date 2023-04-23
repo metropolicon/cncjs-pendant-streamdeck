@@ -2,13 +2,32 @@
 import { useFileList } from '@/lib/scene/file-list'
 import { useUiStore } from '@/stores/ui'
 const { rows, columns } = useUiStore()
-import { onBeforeMount } from 'vue'
+import { onBeforeMount,onBeforeUnmount,onMounted } from 'vue'
 import Cell from './Cell.vue'
 
 const { buttons, loadFiles } = useFileList()
+var myTimeout =null
+
+function refreshList()
+{
+ //refreshWatchFolder()
+ return
+}
 
 onBeforeMount(() => {
+  
   loadFiles()
+})
+
+onMounted(() => {
+  
+  myTimeout = setInterval(refreshList,5000);
+})
+
+onBeforeUnmount(() =>
+{
+ clearInterval(myTimeout);
+ //alert("byebey");
 })
 </script>
 

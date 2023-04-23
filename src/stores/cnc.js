@@ -49,10 +49,33 @@ export const feederStates = {
 const formatDuration = (seconds) => {
   return new Date(seconds * 1000).toISOString().substring(11, 19)
 }
-const formatAxes = (position, axes) =>
+const formatDimensions =(axes,maxaxis) =>
+axes
+    .map((axis) => {
+      var adddim=""
+      if (maxaxis && maxaxis["z"])
+      {
+        adddim=" ("+maxaxis[axis].substring(0,6)+")"
+      }
+      return `${axis.toUpperCase()}:${adddim.padStart(8, ' ')}`
+    })
+    .join('\n')
+
+const formatAxes = (position, axes,maxaxis = null) =>
   axes
     .map((axis) => {
-      return `${axis.toUpperCase()}:${position[axis].padStart(8, ' ')}`
+      var adddim=""
+      if (maxaxis && maxaxis["z"])
+      {
+        adddim=" ("+maxaxis[axis].substring(0,6)+")"
+      }
+      if (adddim.length>0) {
+      return `${axis.toUpperCase()}:${position[axis].padStart(8, ' ')}${adddim.padStart(8, ' ')}`
+    }
+    else
+      {
+        return `${axis.toUpperCase()}:${position[axis].padStart(8, ' ')}`
+      }
     })
     .join('\n')
 
@@ -98,6 +121,7 @@ export const useCncStore = defineStore({
     jogSpeed: 2500,
     jogDistanceZ: 10,
     machineSize: {'x':100,'y':100},
+    machineRegion: {},
     settings: {},
     overrides: {
       feed: 100,
@@ -281,6 +305,11 @@ export const useCncStore = defineStore({
       return {'x':this.mpos['x'],'y':this.mpos['y']}
     }
     ,    
+    getWpos()
+    {
+      return {'x':this.wpos['x'],'y':this.wpos['y']}
+    }
+    ,    
     async loadMacros() {
       if (!this.client) {
         return
@@ -377,7 +406,9 @@ export const useCncStore = defineStore({
     },
     displayWpos: (state) => formatAxes(state.wpos, state.axes),
     displayMpos: (state) => formatAxes(state.mpos, state.axes),
-    machineSize: (state) => ('X :'+state.axisLimits['x']+"\nY :"+state.axisLimits['y']+"\nZ :"+state.axisLimits['z'])
+    displayMSize: (state) => formatDimensions( state.axes,state.axisLimits),
+    machineSize: (state) => ('X :'+state.axisLimits['x']+"\nY :"+state.axisLimits['y']+"\nZ :"+state.axisLimits['z']),
+    machineRegion: (state) => {} 
     ,
     remainingTimeText: (state) => {
       if (!state.remainingTime) {

@@ -29,6 +29,12 @@ export const fetchConfig = async () => {
   const data = await fs.readFile(configPath, 'utf8')
   return JSON.parse(data)
 }
+export const saveConfig = async () => {
+  const options = getOptions()
+  const configPath = path.resolve(options.directory, 'config.json')
+  const data = await fs.readFile(configPath, 'utf8')
+  return JSON.parse(data)
+}
 
 let options
 export const getOptions = () => {

@@ -80,16 +80,18 @@ onUnmounted(() => {
 </script>
 
 <template>
-<canvas
-    class="canvasxyz"
-    ref="canvasxyz"
+
+  <canvas
+    class="clickmove"
+    ref="canvas"
     :key="instance"
     :width="dimensions.width"
     :height="dimensions.height"
   ></canvas>
+  
   <canvas
-    class="clickmove"
-    ref="canvas"
+    class="canvasposition"
+    ref="canvasposition"
     :key="instance"
     :width="dimensions.width"
     :height="dimensions.height"
@@ -99,9 +101,14 @@ onUnmounted(() => {
 <style>
 .clickmove {
   object-fit: contain;
+  
 }
 
-.canvasxyz {
+
+.canvasposition {
   object-fit: contain;
+  z-index:3;
+  pointer-events:none;
+ 
 }
 </style>

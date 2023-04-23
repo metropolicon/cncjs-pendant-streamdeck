@@ -24,7 +24,12 @@
  * @param {object} canvas The DOM Element canvas.
  * @return {number} The scale ratio.
  */
-function calculateRatio(size, canvas) {
+import { useGcodeStore } from '@/stores/gcode' 
+//
+ 
+ 
+ var first=true
+export function calculateRatio(size, canvas) {
   var pW = Math.abs(size.max.x - size.min.x)
   var pH = Math.abs(size.max.y - size.min.y)
   var cW = parseInt(canvas.width, 10),
@@ -52,6 +57,7 @@ function drawStraightLine(
   color,
   settings = {}
 ) {
+  
   const startX = ratio * (line.start.x - start.x)
   const startY = height - ratio * (line.start.y - start.y)
   const endX = ratio * (line.end.x - start.x)
@@ -59,6 +65,14 @@ function drawStraightLine(
   if (startX === endX && startY === endY) {
     return
   }
+  if (first==true)
+  {
+     const gcode = useGcodeStore()
+     // console.log("DEBUT : ",startX,"/",startY)
+     gcode.setStartXY({"x":startX,"y":startY})
+     first=false
+  }
+  
   ctx.beginPath()
   ctx.moveTo(startX, startY)
   ctx.lineTo(endX, endY)
@@ -67,7 +81,37 @@ function drawStraightLine(
   ctx.stroke()
   ctx.closePath()
 }
+export function drawMpos(context,rayon) 
+{
+    
+    context.beginPath();    
+    context.fillStyle = "#FF0000";
+    context.arc(rayon,rayon, rayon, 0, 2 * Math.PI);
+    context.fill();
+    context.closePath()
+    context.beginPath();    
+    context.fillStyle = "#FFFF00";
+    context.arc(rayon,rayon, rayon/2, 0, 2 * Math.PI);
+    context.fill();
+    context.closePath()
+  
+} 
 
+export function MachinetoGrid(machinesize,rect,MposX,MposY,orientation)
+{
+      
+
+      var x=Math.abs(MposX)
+      var y=Math.abs(MposY)
+      const machinesizeX=parseFloat(machinesize['x'])
+      const machinesizeY=parseFloat(machinesize['y'])
+      y=(y*(rect.height/machinesizeY)).toFixed(3)
+      x=(x*(rect.width/machinesizeX)).toFixed(3)
+      //if (orientation.includes('n')) { y=rect.height-y}          
+      //if (orientation.includes('e')) { x=rect.width-x}
+      return { 'x':x,'y':y}
+      
+}
 /**
  * Draws a curved line.
  * @param {object} ctx The canvas 2D context.
@@ -111,11 +155,12 @@ function drawCurvedLine(ctx, ratio, start, line, height, color, settings = {}) {
  *   library).
  * @return {function} - Callback to parse and render a line of gcode
  */
-export function preview(size, colors, settings, canvas) {
+export function preview(size, colors, settings, canvas,machinesize,premier) {
   if (colors === undefined) {
     return
   }
   settings ??= {}
+  first=premier
 
   if (size.max.x === size.min.x && size.max.y === size.min.y) {
     return
@@ -137,11 +182,12 @@ export function preview(size, colors, settings, canvas) {
     canvas.height = imageHeight * ratio
     canvas.width = imageWidth * ratio
   }
-
+  console.log("size : ",size)
   const start = {
     x: size.min.x - (canvas.width / ratio - imageWidth) / 2,
     y: size.min.y - (canvas.height / ratio - imageHeight) / 2,
   }
+  console.log("start : ",start.x,",",start.y)
   const cH = parseInt(canvas.height, 10)
   const ctx = canvas.getContext('2d')
   ctx.imageSmoothingEnabled = true
@@ -149,7 +195,7 @@ export function preview(size, colors, settings, canvas) {
   const drawSettings = {
     lineWidth: Math.max(minLineWidth, ratio * 0.003),
   }
-
+  
   // Cleaning
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   ctx.beginPath()
@@ -158,6 +204,7 @@ export function preview(size, colors, settings, canvas) {
   ctx.fill()
   ctx.imageSmoothingEnabled = true
   ctx.lineCap = 'round'
+  
 
   return (line) => {
     if (line.type === 'G0' && colors.G0 !== undefined) {

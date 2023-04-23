@@ -49,7 +49,7 @@ export const useFileList = () => {
       text: filename,
       textAlignment: 'bottom left',
       bgColor: selected || !cnc.idle ? 8 : 5,
-      icon: 'default/small_document.png',
+      icon: 'small_document.png',
       actions: [
         {
           action: 'fileDetails',
@@ -68,7 +68,7 @@ export const useFileList = () => {
 
     const defaultButton = {
       text: path,
-      icon: 'default/small_folder.png',
+      icon: 'small_folder.png',
       textAlignment: 'bottom left',
       bgColor: 4,
       actions: [
@@ -87,7 +87,7 @@ export const useFileList = () => {
     const configButton = buttonConfig.fileListPreviousFolder ?? {}
     const defaultButton = {
       text: '..',
-      icon: 'default/small_folder_open_back.png',
+      icon: 'small_folder_open_back.png',
       textAlignment: 'bottom center',
       bgColor: 4,
       disabled: (!fileList.path).toString(),
@@ -106,7 +106,7 @@ export const useFileList = () => {
     const configButton = buttonConfig.fileListUpArrow ?? {}
 
     const defaultButton = {
-      icon: 'fluent-ui/caret_up.png',
+      icon: 'caret_up.png',
       bgColor: 7,
       actions: [{ action: 'fileListScrollUp' }],
       disabled: (fileList.rowOffset === 0).toString(),
@@ -128,7 +128,7 @@ export const useFileList = () => {
       )
 
     const defaultButton = {
-      icon: 'fluent-ui/caret_down.png',
+      icon: 'caret_down.png',
       bgColor: 7,
       actions: [{ action: 'fileListScrollDown' }],
       disabled: (fileList.rowOffset + rows >= pages).toString(),

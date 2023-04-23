@@ -33,14 +33,21 @@ export const useFileListStore = defineStore({
       if (!this.client) {
         return
       }
-      this.files = []
-      this.rowOffset = 0
+      
+      
 
       const fileList = await this.client.fetch('watch/files', { path })
       if (fileList) {
-        this.loaded = true
-        this.path = fileList.path
-        this.files = fileList.files
+        this.rowOffset = 0
+        //this.files = []
+        var tfl=this.files.length
+        var ffl=fileList.files.length
+        
+          this.loaded = true
+          this.path = fileList.path
+          this.files = fileList.files
+          console.log("update files :",this.files.length,this.files)
+        
       }
     },
   },
