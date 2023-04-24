@@ -2,7 +2,7 @@
 
 A ridiculously configurable mobile web and Elgato Stream Deck pendant for CNCjs + Grbl
 
-For original description see at original creator github : [Billiam github](https://github.com/Billiam/cncjs-pendant-streamdeck)
+For original description,explanations,..... see at original creator github : [Billiam github](https://github.com/Billiam/cncjs-pendant-streamdeck)
 
 
 capabilities added : 
