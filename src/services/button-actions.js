@@ -34,6 +34,7 @@ const machineCommands = new Set([
   'clickMoveTo',
   'MessageBox',
   'ConfirmBox',
+  'SaveProbeZPosition',
   'enterStepXY',
   'enterStepZ',
   'gcode',
@@ -167,6 +168,29 @@ export default (actionBus, connectionBus) => {
   }
   const completeClickMove = () => {
     store.ui.completeClickMove()
+  }
+  
+  const SaveProbeZPosition = () => {
+    console.log("SaveProbeZPosition")
+    
+    
+    store.cnc.getMacroId("probeposition").then(macroid => {
+    console.log("???: ",macroid)
+    store.cnc.deleteMacroId(macroid).then( macroid => {
+      
+      
+    console.log("attente creation")
+    store.cnc.SaveProbeZPosition("G53Z-5\nG53X"+store.cnc.mpos.x+"Y"+store.cnc.mpos.y+"F3000")
+    macroid=store.cnc.getMacroId("probeposition")
+    MessageBox("Position Probe Z sauvegardée",1000)
+    console.log("creation de la macro !",macroid) 
+    console.log("X:",store.cnc.mpos.x," Y:",store.cnc.mpos.y)
+    store.cnc.probeposition=true
+  
+      
+    })
+    })
+    
   }
 // FIN TELEX
   
@@ -441,6 +465,7 @@ export default (actionBus, connectionBus) => {
     command: userCommand,
     completeInput,
     completeClickMove,
+    SaveProbeZPosition,
     connect,
     decreaseFeedrate,
     decreaseSpindle,

@@ -69,13 +69,7 @@ const formatAxes = (position, axes,maxaxis = null) =>
       {
         adddim=" ("+maxaxis[axis].substring(0,6)+")"
       }
-      if (adddim.length>0) {
       return `${axis.toUpperCase()}:${position[axis].padStart(8, ' ')}${adddim.padStart(8, ' ')}`
-    }
-    else
-      {
-        return `${axis.toUpperCase()}:${position[axis].padStart(8, ' ')}`
-      }
     })
     .join('\n')
 
@@ -94,6 +88,7 @@ const pauseText = (reason, message) => {
   return messages.join('\n')
 }
 
+
 export const useCncStore = defineStore({
   id: 'cnc',
   state: () => ({
@@ -109,6 +104,7 @@ export const useCncStore = defineStore({
     commands: null,
     elapsedTime: null,
     remainingTime: null,
+    
 
     alarmReason: '',
     pauseReason: '',
@@ -151,13 +147,14 @@ export const useCncStore = defineStore({
       wcs: 'G54',
     },
     axes: ['x', 'y', 'z', 'a', 'b', 'c'],
-
+    probeposition:false,
     activeCommands: {},
   }),
 
   actions: {
     setClient(client) {
       this.client = client
+      this.loadMacros()
     },
     setConnected(connected) {
       this.connected = connected
@@ -168,6 +165,7 @@ export const useCncStore = defineStore({
     },
     setToken(token) {
       this.token = token
+      
     },
     setElapsedTime(time) {
       this.elapsedTime = time
@@ -307,22 +305,30 @@ export const useCncStore = defineStore({
     ,    
     getWpos()
     {
-      return {'x':this.wpos['x'],'y':this.wpos['y']}
+      return {'x':this.wpos['x'],'y':this.wpos['y'],'z':this.wpos['z']}
     }
     ,    
     async loadMacros() {
+      
       if (!this.client) {
         return
       }
-      const macros = await this.client.fetch('macros')
+     console.log("LOADMACROS....") 
+     const macros = await this.client.fetch('macros')
       
       if (!macros) {
         return
       }
       this.macros = macros.records.reduce((lookup, macro) => {
         lookup[macro.name] = macro.id
+        if (macro.name == 'probeposition') {
+          this.probeposition=true
+        }
         return lookup
       }, {})
+    },
+    checkisprobeposition() {
+      this.loadMacros() //.then(result => { return this.probeposition}) 
     },
     addActiveCommand(commandId, taskId) {
       this.activeCommands[commandId] = taskId
@@ -346,6 +352,8 @@ export const useCncStore = defineStore({
       if (!this.client) {
         return
       }
+          
+      
       const commands = await this.client.fetch('commands')
       if (!commands) {
         return
@@ -360,6 +368,8 @@ export const useCncStore = defineStore({
       if (!this.client) {
         return
       }
+      
+      
       const { taskId } = await this.client.post(`commands/run/${id}`)
       if (!taskId) {
         return
@@ -367,10 +377,19 @@ export const useCncStore = defineStore({
       this.addActiveCommand(id, taskId)
     },
     async getMacroId(macroName) {
-      if (!this.macros) {
+      if (!this.macros || !this.macros?.[macroName]) {
         await this.loadMacros()
       }
+      console.log("---->",this.macros?.[macroName])
       return this.macros?.[macroName]
+    },
+    async deleteMacroId(macroId) {
+      const { taskId } = await this.client.mydelete(`macros/${macroId}`)
+      return macroId
+      
+    },
+    async SaveProbeZPosition(position) {
+      const myupdate = await this.client.mypost('macros',{"content":position,"name":"probeposition"}).then(result => { this.loadMacros()}) 
     },
     async getCommandId(commandName) {
       if (!this.commands) {
@@ -397,7 +416,9 @@ export const useCncStore = defineStore({
     running: (state) =>
       state.workflowState === workflowStates.RUNNING &&
       state.feederState === feederStates.IDLE,
-    alarm: (state) => state.runState === cncStates.ALARM,
+    alarm: (state) => state.runState === cncStates.ALARM,    
+    isprobepositionxy: (actions) => actions.checkisprobeposition(),
+    isprobeposition: (state) => state.probeposition,
     elapsedTimeText: (state) => {
       if (!state.elapsedTime) {
         return ''

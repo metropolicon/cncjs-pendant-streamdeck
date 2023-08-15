@@ -65,6 +65,7 @@ export default (container) => {
     uiStore.lineHeight = uiConfig.lineHeight ?? uiStore.lineHeight
     uiStore.pageColor = uiConfig.pageColor ?? uiStore.pageColor
     uiStore.setGcodeColors(uiConfig.gcodeColors)
+    uiStore.setLineWidth(uiConfig.lineWidth)
     uiStore.setBgColor(uiConfig.bgColor)
     uiStore.setProgressColor(uiConfig.progressColor)
     uiStore.setOrientation(uiConfig.orientation)

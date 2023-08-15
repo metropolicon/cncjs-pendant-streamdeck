@@ -29,9 +29,13 @@ export const renderToolpath = (
   const ui = useUiStore()
   const gcode = useGcodeStore()
   const machinesize=useCncStore().getLimitsXYZ()
-  const colors = { ...defaultColors, ...(settings.colors || {}) }
-  const options = { autosize: true, ...settings }
+  // const colors = { ...defaultColors, ...(settings.colors || {}) }
+  const colors=ui.gcodeColors
+  
+  const options = { lineWidth:ui.lineWidth, autosize: true, ...settings }
   const size=parsedGcode.size
+  
+  
   try {
   if (myInterval) {
     clearInterval(myInterval);
@@ -81,39 +85,47 @@ catch (error) {
   {
     draw(parsedGcode.lines, drawLine, callback, halted)
   }
-  var MposX=65535;
-  var MposY=65535;
+  var Mpos={"X":65535,"Y":65535,"Z":65535 };
   let targetDimensions = {}   
-  const imageWidth = Math.abs(size.max.x - size.min.x)
-  const imageHeight = Math.abs(size.max.y - size.min.y)
   const centreX=gcode.displayRange.min.x<0 ? Math.abs(gcode.displayRange.min.x) : 0;
   const centreY=gcode.displayRange.min.y<0 ? Math.abs(gcode.displayRange.min.y) : 0;
-  const RatioX=(canvas.width/parseFloat(gcode.displayDimensions.width)) //imageWidth
-  const RatioY=(canvas.height/parseFloat(gcode.displayDimensions.depth)) //imageHeight 
+  const RatioX=(canvas.width/parseFloat(gcode.displayDimensions.width)) 
+  const RatioY=(canvas.height/parseFloat(gcode.displayDimensions.depth)) 
   const DiffX=Math.round((canvasWidth-canvas.width)/2)-rayon
   const DiffY=parseInt(canvas.height)+Math.round((canvasHeight-canvas.height)/2)-rayon
     
-  console.log("Scene : ",ui.sceneName,",",gcode.getStartXY())
-  //if (ui.sceneName=="currentGcode") 
-  if (MposX>0)
+  if (Mpos.X>0)
   {
-    drawMpos(ctxPosition,rayon)
+    // drawMpos(ctxPosition,rayon)
+    const img = new Image()
+    var idxImg=0
+    const Img=["icons/z0.png","icons/z1.png","icons/z2.png","icons/z3.png"]
+    img.src = Img[idxImg]    
+    ctxPosition.drawImage(img,0,0,rayon*2,rayon*2)
     startXY=gcode.getStartXY()
     myInterval=setInterval(function() {
     var newValue = useCncStore().getWpos();
-    if (MposX!=parseFloat(newValue['x']).toFixed(3) || MposY!=parseFloat(newValue['y']).toFixed(3))   
+    if (Mpos.X!=parseFloat(newValue['x']).toFixed(3) || Mpos.Y!=parseFloat(newValue['y']).toFixed(3))   
     {      
-        MposX=parseFloat(newValue['x']).toFixed(3)
-        MposY=parseFloat(newValue['y']).toFixed(3)
+        Mpos.X=parseFloat(newValue['x']).toFixed(3)
+        Mpos.Y=parseFloat(newValue['y']).toFixed(3)
         
-        // console.log("MPOS x/y:",MposX,',',MposY)
-        var MposNX=Math.round((parseFloat(MposX)+parseFloat(centreX))*RatioX)+DiffX
-        var MposNY=Math.round(DiffY-((parseFloat(MposY)+parseFloat(centreY))*RatioY))
-        // console.log("MPOS after x/y:",MposNX,',',MposNY,"(",MposX,",",Total,",",DiffX,")")
+        var MposNX=Math.round((parseFloat(Mpos.X)+parseFloat(centreX))*RatioX)+DiffX
+        var MposNY=Math.round(DiffY-((parseFloat(Mpos.Y)+parseFloat(centreY))*RatioY))
+        
         canvasPosition.style.top= ""+MposNY+"px";
         canvasPosition.style.left= ""+MposNX+"px";  
        
         
+    }
+    if (Mpos.Z!=parseInt(newValue['z']))
+    {
+      Mpos.Z=parseInt(newValue['z'])
+      idxImg=idxImg<3 ? idxImg+1:0
+      ctxPosition.clearRect(0, 0, rayon*2,rayon*2)
+      img.src = `icons/z${idxImg}.png`; 
+      ctxPosition.drawImage(img,0,0,rayon*2,rayon*2)
+      
     }
     if (ui.sceneName!="currentGcode" && ui.sceneName!="status") {
       clearInterval(myInterval);

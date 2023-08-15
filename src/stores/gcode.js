@@ -62,7 +62,7 @@ export const useGcodeStore = defineStore({
       const dimensions = {
         width: (this.dimensions.max.x - this.dimensions.min.x).toFixed(3),
         depth: (this.dimensions.max.y - this.dimensions.min.y).toFixed(3),
-        height: (this.dimensions.max.z - this.dimensions.min.z).toFixed(3),
+        height: Math.abs(this.dimensions.min.z).toFixed(3),
       }
       return Object.freeze(dimensions)
     },

@@ -102,3 +102,12 @@ onUnmounted(() => {
  
 }
 </style>
+<style scoped>
+.image {
+  background: url("icons/circle_small.png") no-repeat center
+    center;
+  background-size: contain;
+  height:100%;
+  width:100%;
+}
+</style>

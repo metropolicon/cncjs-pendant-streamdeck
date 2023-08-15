@@ -22,6 +22,7 @@ export const useUiStore = defineStore({
     fileDetailsSort: 'alpha_asc',
     gcodeColors: {},
     gcodeLimit: 0,
+    lineWidth:2,
     iconSize: 72,
     input: {
       value: '',
@@ -113,7 +114,8 @@ export const useUiStore = defineStore({
     tellPos(event) {
     const ui = useUiStore()
     var rect = event.target.getBoundingClientRect();
-    if (this.sceneName=='MoveClic' && event.originalTarget.localName.toLowerCase().includes('canvas') && event.clientX>=rect.left && event.clientX<=rect.right && event.clientY>=rect.top && event.clientY<=rect.bottom)
+    // if (this.sceneName=='MoveClic' && event.originalTarget.localName.toLowerCase().includes('canvas') && event.clientX>=rect.left && event.clientX<=rect.right && event.clientY>=rect.top && event.clientY<=rect.bottom)
+    if (this.sceneName=='MoveClic' && event.target.localName.toLowerCase().includes('canvas') && event.clientX>=rect.left && event.clientX<=rect.right && event.clientY>=rect.top && event.clientY<=rect.bottom)
     {
       var x = event.clientX - rect.left;
       var y = event.clientY - rect.top;      
@@ -135,10 +137,8 @@ export const useUiStore = defineStore({
           y=-y
         }
        
-      //MessageBox("GO TO x: " + x + " y: " + y,1500)
       let cmdgcode="G53 X"+x+" Y"+y
       this.clickMove.value = cmdgcode
-      // console.log(cmdgcode)      
       Swal.fire({  title: "Move To\nX:"+x+"\nY:"+y,  icon: 'info',  timer:1500,showConfirmButton:false, showCloseButton:false,backdrop:false,background:'#777',color:'#cc0'})
       this.clickMove.gcode(cmdgcode)
 
@@ -185,6 +185,12 @@ export const useUiStore = defineStore({
         return
       }
       this.gcodeColors = Object.freeze(colors)
+    },
+    setLineWidth(lineWidth) {
+      if (!lineWidth) {
+        return
+      }
+      this.lineWidth = lineWidth
     },
     activity() {
       this.active = true

@@ -68,7 +68,6 @@ function drawStraightLine(
   if (first==true)
   {
      const gcode = useGcodeStore()
-     // console.log("DEBUT : ",startX,"/",startY)
      gcode.setStartXY({"x":startX,"y":startY})
      first=false
   }
@@ -179,15 +178,13 @@ export function preview(size, colors, settings, canvas,machinesize,premier) {
   const ratio = calculateRatio(size, targetDimensions)
 
   if (settings.autosize) {
-    canvas.height = imageHeight * ratio
-    canvas.width = imageWidth * ratio
+    canvas.height = imageHeight * ratio 
+    canvas.width = imageWidth * ratio 
   }
-  console.log("size : ",size)
   const start = {
     x: size.min.x - (canvas.width / ratio - imageWidth) / 2,
     y: size.min.y - (canvas.height / ratio - imageHeight) / 2,
   }
-  console.log("start : ",start.x,",",start.y)
   const cH = parseInt(canvas.height, 10)
   const ctx = canvas.getContext('2d')
   ctx.imageSmoothingEnabled = true
@@ -200,11 +197,11 @@ export function preview(size, colors, settings, canvas,machinesize,premier) {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   ctx.beginPath()
   ctx.rect(0, 0, canvas.width, canvas.height)
+  console.log("canvas.width, canvas.height :",canvas.width, canvas.height)
   ctx.fillStyle = settings.bg || 'transparent'
   ctx.fill()
   ctx.imageSmoothingEnabled = true
   ctx.lineCap = 'round'
-  
 
   return (line) => {
     if (line.type === 'G0' && colors.G0 !== undefined) {
